@@ -4,7 +4,7 @@ while PezziLavorati <= DimensionePallet do
 
 if Carico > DimensionePallet then
     Sleep(250)
-    goto Label4
+    goto Label1
 end
 
 MoveJ(P)  -- posizione intermedia pallet1
@@ -13,9 +13,19 @@ Move(points_pallet2[Carico])  -- presa pezzo
 ToolDO(1,1) -- tool attivo
 Sleep(1000)
 
-    while not ToolDI(1) == ON do
-        Sleep(250)
+while not ToolDI(1) == ON do --- controllo presa pezzo, se preso in modo errato riprovare, se non c'è va oltre prova 2 volte 
+    Sleep(500)
+    Try = Try + 1
+    ToolDO(1,0)
+    Move(RP(points_pallet1[Carico],{0,0,40}))
+    Move(points_pallet1[Carico])  -- presa pezzo
+    ToolDO(1,1) -- tool attivo
+    Sleep(1000)
+    if Try == 2 then
+        Try = 0
+        break
     end
+end
 
 if ToolDI(1) == ON then
 Move(RP(points_pallet2[Carico],{0,0,40}))
@@ -32,19 +42,10 @@ Move(P) -- posizione di ricentraggio
 ToolDO(1,0) -- tool spento  
 Sleep(1000)
 Move(RP((P),{0,0,30})) -- sopra ricentraggio
-:: Label3 ::
+Sleep(1000)
+Sync()
 
-    while not DI(11) == ON do -- D1(11) = presenza centratore, controllo pezzo 
-        Sleep(2000)
-        Sync()
-        print("-- PEZZO NON PRESENTE O COLLOCATO IN MODO ERRATO NEL CENTRATORE --")
-        DO(11,0) -- semaforo verde spento
-        DO(12,1) -- semaforo blu scceso
-        Pause()
-        DO(12,0) -- semaforo blu spento 
-        DO(11,1) -- semaforo verde acceso 
-        goto Label3
-    end
+Centratore = 1
 
 DO(13,1) -- apro centratore
 DO(13,0) -- chiudo centratore
@@ -54,7 +55,7 @@ Move(P) -- posizione attesa fuori macchina
 
 ----------ATTESA MACCHINA IN LAVORAZIONE--------
 
-:: Label4 ::
+:: Label1 ::
 
 ResetElapsedTime()
 Time = ElapsedTime / 1000
@@ -68,7 +69,7 @@ Time = ElapsedTime / 1000
     end
 
 -------------------------------------------------
-
+TOTPezzi = TOTPezzi + 1
 DO(4,0) -- chiudi porta OFF
 DO(3,1) -- apri porta ON
     while not DI(2) == ON do
@@ -128,16 +129,39 @@ end
 MoveJ(P)  -- posizione fuori ingombro
 
 if Carico > DimensionePallet then
-    goto Label5
+    Sleep(250)
+    goto Label2
 end
+
+:: Label5 ::
+
+Sleep(500)
+
+Ricentraggio()
+
 Sync()
 Go(RP((P3),{0,0,30})) -- sopra ricentraggio
+
+Centratore = 0
+
 Move(P) -- posizione di ricentraggio
 ToolDO(1,1) -- tool attivo, riprendo il pezzo dal centratore
 Sleep(1000)
 
-while not ToolDI(1) == ON do
-    Sleep(250)
+while not ToolDI(1) == ON do --- controllo presa pezzo, se preso in modo errato riprovare, se non c'è si ferma. 
+    Sleep(500)
+    Try = Try + 1
+    ToolDO(1,0)
+    Go(RP((P3),{0,0,30})) -- sopra ricentraggio
+    Move(P) -- posizione di ricentraggio
+    ToolDO(1,1) -- tool attivo
+    Sleep(1000)
+    if Try == 2 then
+        Try = 0
+        Sync()
+        print("-- RIPOSIZIONARE IL PEZZO NEL CENTRATORE -- ")
+        Pause()
+    end
 end
 
 Move(RP((P3),{0,0,30})) -- sopra ricentraggio
@@ -177,47 +201,41 @@ DO(6,0) -- asse lineare in posizione di lavoro
 DO(5,1)  -- attivo comando elettromagnetico
 Sleep(500)
 
-while not DI(5) == ON do  -- verifica presenza pezzo in macchina
-    Sleep(250)
-end
 
-Sync()
-print("-- PEZZO IN POSIZIONE --")
 Move(RP((P),{0,0,30}))  -- Distanza da mandrino
 Move(P) -- posizione intermedia centro macchina
 Move(P) -- altre posizioni verso uscita macchina
 
 Move(P) -- posizione attesa fuori macchina
 
+
+    Sleep(250)
+    if DI(5) == OFF then -- VERIFICA PEZZO PRESENTE IN MACCHINA
+        Sync()
+        print ("-- PEZZO NON PRESENTE --")
+        goto Label5
+    end
+
+
 DO(3,0) -- apri porta OFF
 DO(4,1) -- chiudi porta ON
 
-while not DI(1) == ON do -- verifica chiusura porta
-    Sleep(250)
+
+while not DI(5) == ON and DI(1) == ON and DI(7) == ON do
+    Sleep(500)
 end
 
-if DI(5) == ON and DI(1) == ON and DI(7) == ON then
     Sleep(500)
     Sync()
     print("-- VERICHE OK, MACCHINA PRONTA PER LA LAVORAZIONE --")
     print("-- AVVIO LAVORAZIONE --")
     Avvio()
     Carico = Carico + 1
-end
-PezziLavorati = PezziLavorati + 1
+    PezziLavorati = PezziLavorati + 1
 else
         Carico = Carico + 1
         Sync()
         print("MANCATA PRESA PEZZO -- MI SPOSTO AL PROSSIMO")
 end
 end
-
-:: Label5 ::
-
-Sync()
-MoveJ(P)  -- posizione fuori ingombro
-Verifica = 2
-print("-- CICLO COMPLETATO --")
-local endTime = os.time()
-print("-- DURATA: ", math.floor(os.difftime(endTime, startTime) / 60), " MINUTI --")
 end

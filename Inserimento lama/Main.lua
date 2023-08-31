@@ -20,7 +20,13 @@ Scarico = 1
 PezziLavorati = 0
 Verifica = 0
 Time = 0
+Min = 0
 DimensionePallet = 25
+TOTPezzi = 0
+Centratore = 0
+Tool = 0
+Try = 0
+Ricentraggio = 0
 
 --- inizializzazione pallet 1 & 2 ---
 
@@ -37,14 +43,28 @@ PalletCreate({1,2,3,4},{5,5},points_pallet2)
 Sync()
 MoveJ(P)  -- posizione fuori ingombro
 
+Verifica = 1
+
 MoveJ(P)  -- posizione intermedia pallet1
 Move(RP(points_pallet1[Carico],{0,0,40})) -- sopra pezzo
 Move(points_pallet1[Carico])  -- presa pezzo
 ToolDO(1,1) -- tool attivo
 Sleep(1000)
 
-while not ToolDI(1) == ON do
-    Sleep(250)
+
+
+while not ToolDI(1) == ON do --- controllo presa pezzo, se preso in modo errato riprovare, se non c'è va oltre prova 2 volte 
+    Sleep(500)
+    Try = Try + 1
+    ToolDO(1,0)
+    Move(RP(points_pallet1[Carico],{0,0,40}))
+    Move(points_pallet1[Carico])  -- presa pezzo
+    ToolDO(1,1) -- tool attivo
+    Sleep(1000)
+    if Try == 2 then
+        Try = 0
+        break
+    end
 end
 
 if ToolDI(1) == ON then
@@ -61,32 +81,41 @@ if ToolDI(1) == ON then
     Move(P) -- posizione di ricentraggio
     ToolDO(1,0) -- tool spento  
     Sleep(1000)
+
+    :: Label3 ::
+
     Move(RP((P),{0,0,30})) -- sopra ricentraggio
-    :: Label1 ::
-    
-        while not DI(11) == ON do -- D1(11) = presenza centratore, controllo pezzo 
-            Sleep(2000)
-            Sync()
-            print("-- PEZZO NON PRESENTE O COLLOCATO IN MODO ERRATO NEL CENTRATORE --")
-            DO(11,0) -- semaforo verde spento
-            DO(12,1) -- semaforo blu scceso
-            Pause()
-            DO(12,0) -- semaforo blu spento 
-            DO(11,1) -- semaforo verde acceso 
-            goto Label1
-        end
+
+    Centratore = 1
+    Sleep(1000)
     
     DO(13,1) -- apro centratore
+    Sleep(250)
     DO(13,0) -- chiudo centratore
+
+    Centratore = 0
+
     Sync()
     Move(P) -- posizione di ricentraggio
     ToolDO(1,1) -- tool attivo, riprendo il pezzo dal centratore
-    Sleep(800)
+    Sleep(1000)
     
-    while not ToolDI(1) == ON do
-        Sleep(250)
+    while not ToolDI(1) == ON do --- controllo presa pezzo, se preso in modo errato riprovare, se non c'è si ferma. 
+        Sleep(500)
+        Try = Try + 1
+        ToolDO(1,0)
+        Go(RP((P3),{0,0,30})) -- sopra ricentraggio
+        Move(P) -- posizione di ricentraggio
+        ToolDO(1,1) -- tool attivo
+        Sleep(1000)
+        if Try == 2 then
+            Try = 0
+            Sync()
+            print("-- RIPOSIZIONARE IL PEZZO NEL CENTRATORE -- ")
+            Pause()
+        end
     end
-    
+    Tool = 1
     Go(RP((P3),{0,0,30})) -- sopra ricentraggio
     Move(P) -- posizione attesa fuori macchina
     
@@ -120,6 +149,10 @@ if ToolDI(1) == ON then
     
     Sync()
     Move(P) -- contatto con asse lineare e mandrino, punto di rilascio pezzo
+
+    Tool = 0
+     
+    Sleep(500)
     ToolDO(1,0)  -- spengo tool
     Sleep(500)
     
@@ -131,18 +164,24 @@ if ToolDI(1) == ON then
     DO(5,1)  -- attivo comando elettromagnetico
     Sleep(500)
     
-    while not DI(5) == ON do  -- verifica presenza pezzo in macchina
-        Sleep(250)
-    end
-    
-    Sync()
-    print("-- PEZZO IN POSIZIONE --")
+  
+
     Move(RP((P),{0,0,30}))  -- Distanza da mandrino
     Move(P) -- posizione intermedia centro macchina
     Move(P) -- altre posizioni verso uscita macchina
     
     Move(P) -- posizione attesa fuori macchina
     
+        Sleep(250)
+        if DI(5) == OFF then -- VERIFICA PEZZO PRESENTE IN MACCHINA
+            Sync()
+            print ("-- PEZZO NON PRESENTE --")
+            goto Label3
+        end
+   
+    Sync()
+    print("-- PEZZO IN POSIZIONE --")
+    Sleep(500)
     DO(3,0) -- apri porta OFF
     DO(4,1) -- chiudi porta ON
     
@@ -157,7 +196,7 @@ if ToolDI(1) == ON then
         print("-- AVVIO LAVORAZIONE --")
         Avvio()
         Carico = Carico + 1
-        PezziLavorati = PezziLavorati + 1 
+        PezziLavorati = PezziLavorati + 1
     end
     
     Sync()
@@ -165,6 +204,8 @@ if ToolDI(1) == ON then
 
 else
     Carico = Carico + 1
+    ToolDO(1,0)
+    Sleep(500)
     Sync()
     print("MANCATA PRESA PEZZO -- MI SPOSTO AL PROSSIMO")
 end
@@ -182,3 +223,14 @@ PezziLavorati = 0
 ---------------------
 
 Pallet2()
+
+:: Label2 ::
+
+Sync()
+MoveJ(P)  -- posizione fuori ingombro
+Verifica = 2
+Sync()
+print("-- PEZZI LAVORATI: ", TOTPezzi, "/", DimensionePallet," --")
+local endTime = os.time()
+print("-- DURATA: ", math.floor(os.difftime(endTime, startTime) / 60), " MINUTI --")
+print("-- CICLO COMPLETATO --")
