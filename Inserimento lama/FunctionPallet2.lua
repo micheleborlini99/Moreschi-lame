@@ -8,7 +8,7 @@ if Carico > DimensionePallet then
 end
 
 MoveJ(P)  -- posizione intermedia pallet1
-Move(RP(points_pallet2[Carico],{0,0,40})) -- sopra pezzo
+Move(RP(points_pallet2[Carico], Offset)) -- sopra pezzo
 Move(points_pallet2[Carico])  -- presa pezzo
 ToolDO(1,1) -- tool attivo
 Sleep(1000)
@@ -17,7 +17,7 @@ while not ToolDI(1) == ON do --- controllo presa pezzo, se preso in modo errato 
     Sleep(500)
     Try = Try + 1
     ToolDO(1,0)
-    Move(RP(points_pallet1[Carico],{0,0,40}))
+    Move(RP(points_pallet1[Carico], Offset))
     Move(points_pallet1[Carico])  -- presa pezzo
     ToolDO(1,1) -- tool attivo
     Sleep(1000)
@@ -28,7 +28,7 @@ while not ToolDI(1) == ON do --- controllo presa pezzo, se preso in modo errato 
 end
 
 if ToolDI(1) == ON then
-Move(RP(points_pallet2[Carico],{0,0,40}))
+Move(RP(points_pallet2[Carico], Offset))
 Go(RP((P),{0,0,30})) -- sopra ricentraggio
 DO(13,0) -- centratore chiuso
 
@@ -41,7 +41,7 @@ DO(13,0) -- centratore chiuso
 Move(P) -- posizione di ricentraggio
 ToolDO(1,0) -- tool spento  
 Sleep(1000)
-Move(RP((P),{0,0,30})) -- sopra ricentraggio
+Move(RP((P), Offset)) -- sopra ricentraggio
 Sleep(1000)
 Sync()
 
@@ -80,7 +80,7 @@ Move(P) -- posizione intermedia centro macchina
 Move(P) -- altre posizioni verso posizionatura pezzo
 Move(P) -- ////
 
-Move(RP((P),{0,0,30}))  -- Distanza da mandrino
+Move(RP((P), Offset))  -- Distanza da mandrino
 
 DO(5,0) -- comando elettromagnatico OFF
 DO(6,1) --asse lineare in posizione di rilascio o presa 
@@ -92,7 +92,7 @@ ToolDO(1,1) -- attivo Tool
     end
 
 DO(6,0)  -- asse lineare in posizione di lavoro
-Move(RP((P),{0,0,30}))  -- Distanza da mandrino
+Move(RP((P), Offset))  -- Distanza da mandrino
 Move(P) -- posizione intermedia centro macchina
 Move(P) -- altre posizioni verso uscita macchina
 
@@ -102,7 +102,7 @@ Move(P) -- posizione attesa fuori macchina
 
 if Carico == 1 then
     MoveJ(P)  -- posizione intermedia pallet1
-    Move(RP(points_pallet1[Scarico],{0,0,40})) -- sopra pezzo 
+    Move(RP(points_pallet1[Scarico], Offset)) -- sopra pezzo 
     Move(points_pallet1[Scarico])  -- rilascio pezzo lavorato
     ToolDO(1,0) -- tool spento
     Sleep(1000)
@@ -114,7 +114,7 @@ if Carico == 1 then
     else
 
     MoveJ(P)  -- posizione intermedia pallet2
-    Move(RP(points_pallet2[Scarico],{0,0,40})) -- sopra pezzo 
+    Move(RP(points_pallet2[Scarico], Offset)) -- sopra pezzo 
     Move(points_pallet2[Scarico])  -- rilascio pezzo lavorato
     ToolDO(1,0) -- tool spento
     Sleep(1000)
@@ -140,7 +140,7 @@ Sleep(500)
 Ricentraggio()
 
 Sync()
-Go(RP((P3),{0,0,30})) -- sopra ricentraggio
+Go(RP((P3),Offset)) -- sopra ricentraggio
 
 Centratore = 0
 
@@ -152,7 +152,7 @@ while not ToolDI(1) == ON do --- controllo presa pezzo, se preso in modo errato 
     Sleep(500)
     Try = Try + 1
     ToolDO(1,0)
-    Go(RP((P3),{0,0,30})) -- sopra ricentraggio
+    Go(RP((P3), Offset)) -- sopra ricentraggio
     Move(P) -- posizione di ricentraggio
     ToolDO(1,1) -- tool attivo
     Sleep(1000)
@@ -164,7 +164,7 @@ while not ToolDI(1) == ON do --- controllo presa pezzo, se preso in modo errato 
     end
 end
 
-Move(RP((P3),{0,0,30})) -- sopra ricentraggio
+Move(RP((P3), Offset)) -- sopra ricentraggio
 Move(P) -- posizione attesa fuori macchina
 
 while not DI(3) == OFF and DI(5) == OFF and DI(7) == OFF and DI(2) == ON and DI(1) == OFF do
@@ -179,7 +179,7 @@ Move(P) -- posizione intermedia centro macchina
 Move(P) -- altre posizioni verso posizionatura pezzo
 Move(P) -- ////
 
-Move(RP((P),{0,0,30}))  -- Distanza da mandrino
+Move(RP((P), Offset))  -- Distanza da mandrino
 
 DO(6,1) -- asse lineare in posizione di presa
 DO(5,0) -- comando elettromagnetico spento
@@ -202,7 +202,7 @@ DO(5,1)  -- attivo comando elettromagnetico
 Sleep(500)
 
 
-Move(RP((P),{0,0,30}))  -- Distanza da mandrino
+Move(RP((P), Offset))  -- Distanza da mandrino
 Move(P) -- posizione intermedia centro macchina
 Move(P) -- altre posizioni verso uscita macchina
 

@@ -27,6 +27,7 @@ Centratore = 0
 Tool = 0
 Try = 0
 Ricentraggio = 0
+Offset = {0,0,35}
 
 --- inizializzazione pallet 1 & 2 ---
 
@@ -46,7 +47,7 @@ MoveJ(P)  -- posizione fuori ingombro
 Verifica = 1
 
 MoveJ(P)  -- posizione intermedia pallet1
-Move(RP(points_pallet1[Carico],{0,0,40})) -- sopra pezzo
+Move(RP(points_pallet1[Carico], Offset)) -- sopra pezzo
 Move(points_pallet1[Carico])  -- presa pezzo
 ToolDO(1,1) -- tool attivo
 Sleep(1000)
@@ -57,7 +58,7 @@ while not ToolDI(1) == ON do --- controllo presa pezzo, se preso in modo errato 
     Sleep(500)
     Try = Try + 1
     ToolDO(1,0)
-    Move(RP(points_pallet1[Carico],{0,0,40}))
+    Move(RP(points_pallet1[Carico], Offset))
     Move(points_pallet1[Carico])  -- presa pezzo
     ToolDO(1,1) -- tool attivo
     Sleep(1000)
@@ -68,7 +69,7 @@ while not ToolDI(1) == ON do --- controllo presa pezzo, se preso in modo errato 
 end
 
 if ToolDI(1) == ON then
-    Move(RP(points_pallet1[Carico],{0,0,40}))
+    Move(RP(points_pallet1[Carico], Offset))
     Go(RP((P),{0,0,30})) -- sopra ricentraggio
     DO(13,0) -- centratore chiuso
     
@@ -84,7 +85,7 @@ if ToolDI(1) == ON then
 
     :: Label3 ::
 
-    Move(RP((P),{0,0,30})) -- sopra ricentraggio
+    Move(RP((P), Offset)) -- sopra ricentraggio
 
     Centratore = 1
     Sleep(1000)
@@ -104,7 +105,7 @@ if ToolDI(1) == ON then
         Sleep(500)
         Try = Try + 1
         ToolDO(1,0)
-        Go(RP((P3),{0,0,30})) -- sopra ricentraggio
+        Go(RP((P3), Offset)) -- sopra ricentraggio
         Move(P) -- posizione di ricentraggio
         ToolDO(1,1) -- tool attivo
         Sleep(1000)
@@ -116,7 +117,7 @@ if ToolDI(1) == ON then
         end
     end
     Tool = 1
-    Go(RP((P3),{0,0,30})) -- sopra ricentraggio
+    Go(RP((P3), Offset)) -- sopra ricentraggio
     Move(P) -- posizione attesa fuori macchina
     
     while not DI(3) == OFF and DI(5) == OFF and DI(7) == OFF do
@@ -138,7 +139,7 @@ if ToolDI(1) == ON then
     Move(P) -- altre posizioni verso posizionatura pezzo
     Move(P) -- ////
     
-    Move(RP((P),{0,0,30}))  -- Distanza da mandrino
+    Move(RP((P), Offset))  -- Distanza da mandrino
     
     DO(6,1) -- asse lineare in posizione di presa
     DO(5,0) -- comando elettromagnetico spento
@@ -166,7 +167,7 @@ if ToolDI(1) == ON then
     
   
 
-    Move(RP((P),{0,0,30}))  -- Distanza da mandrino
+    Move(RP((P), Offset))  -- Distanza da mandrino
     Move(P) -- posizione intermedia centro macchina
     Move(P) -- altre posizioni verso uscita macchina
     
